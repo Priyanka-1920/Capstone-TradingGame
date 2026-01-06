@@ -9,7 +9,7 @@ WORKDIR /backend
 RUN npm install
 
 ENV PORT=5000
-ENV MONGODB_CONNECTION_STRING=mongodb+srv://<username><password>/tradinggame
+ENV MONGODB_CONNECTION_STRING=mongodb+srv://deeps19nija_db_user:epDmXHFEVq2wmzDF@herovired-deepalicluste.l09w30m.mongodb.net/tradinggame
 ENV SECRET_KEY=dev-jwt-secret_key
 ENV GOOGLE_CLIENT_ID=dummy_client_id
 ENV GOOGLE_CLIENT_SECRET=dummy_client_secret
