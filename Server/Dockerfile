@@ -9,16 +9,16 @@ WORKDIR /backend
 RUN npm install
 
 ENV PORT=5000
-ENV MONGODB_CONNECTION_STRING=mongodb+srv://deeps19nija_db_user:epDmXHFEVq2wmzDF@herovired-deepalicluste.l09w30m.mongodb.net/tradinggame
+ENV MONGODB_CONNECTION_STRING=mongodb+srv://<your_db_user>:<your_db_password>@<your_db_host>/tradinggame
 ENV SECRET_KEY=dev-jwt-secret_key
-ENV GOOGLE_CLIENT_ID=dummy_client_id
-ENV GOOGLE_CLIENT_SECRET=dummy_client_secret
+ENV GOOGLE_CLIENT_ID=<google_client_id>
+ENV GOOGLE_CLIENT_SECRET=<google_client_secret>
 ENV GOOGLE_CALLBACK_URL=http://localhost:5000/auth/google/callback
-ENV GMAIL=djain
-ENV PASSWORD=123
-ENV AWS_REGION=aws_region
-ENV AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID
-ENV AWS_SECRET_ACCESS_KEY=secret_access_key
-ENV AWS_BUCKET_NAME=aws_bucket_name
+ENV GMAIL=deeps19nija@gmail.com
+ENV PASSWORD=<password>
+ENV AWS_REGION=eu-west-2
+ENV AWS_ACCESS_KEY_ID=<your_aws_access_key_id>
+ENV AWS_SECRET_ACCESS_KEY=<your_aws_secret_access_key>
+ENV AWS_BUCKET_NAME=tradinggame-capstone
 
 CMD ["node","index.js"]
