@@ -1,0 +1,38 @@
+version: "3.8"
+services:
+
+  backend:
+    build:
+      context: ./Server
+      dockerfile: Dockerfile
+    container_name: tradinggame-backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    restart: always
+  websocket:
+    build:
+      context: ./websockets
+      dockerfile: Dockerfile
+    container_name: tradinggame-websocket
+    ports:
+      - "3007:3007"
+    env_file:
+      - .env
+    depends_on:
+      - backend
+    restart: always
+  client:
+    build:
+      context: ./Client
+      dockerfile: Dockerfile
+    container_name: tradinggame-client
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - backend
+      - websocket
+    restart: always
