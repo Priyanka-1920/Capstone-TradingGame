@@ -1,10 +1,52 @@
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
-const userModelCtrl = require("./models/userModel");
 const xss = require("xss-clean");
 const mongoSanitize = require("express-mongo-sanitize");
+const session = require("express-session");
+const dotenv = require("dotenv");
 
+dotenv.config();
+
+const app = express();
+
+// -------------------
+// Security Middlewares
+// -------------------
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
+
+app.use(
+  mongoSanitize({
+    replaceWith: "_",
+  })
+);
+
+app.use(xss());
+
+// -------------------
+// Session
+// -------------------
+app.use(
+  session({
+    resave: false,
+    saveUninitialized: true,
+    secret: "secret",
+  })
+);
+
+// -------------------
+// Passport (OAuth - optional)
+// -------------------
+const passport = require("./auth");
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+// -------------------
+// Controllers & Routes
+// -------------------
 const updateStocks = require("./controllers/stocks/updateStocks");
 
 const contestRoutes = require("./routes/contestRoutes");
@@ -18,81 +60,69 @@ const userRoutes = require("./routes/userRoutes");
 const stockRoutes = require("./routes/stockRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 
-const passport = require("./auth");
-
-const jwt = require("jsonwebtoken");
-const generateToken = require("./jwt").generateToken;
-const session = require("express-session");
-const dotenv = require("dotenv");
-dotenv.config();
-const app = express();
-// Securing HTTP Headers
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
-app.use(
-  mongoSanitize({
-    replaceWith: "_",
-  })
-);
-app.use(xss());
-
-app.use(
-  session({
-    resave: false,
-    saveUninitialized: true,
-    secret: "secret",
-  })
-);
-
-app.use(passport.initialize());
-app.use(passport.session());
-
+// -------------------
+// Auth Routes
+// -------------------
 app.get("/error", (req, res) => res.send("error logging in"));
+
 app.get("/logout", (req, res) => {
-  req.logout();
-  res.send("loggedout");
+  req.logout(() => {
+    res.send("logged out");
+  });
 });
-app.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
 
-app.get(
-  "/auth/google/callback/",
-  passport.authenticate("google", { failureRedirect: "/error" }),
-  async function (req, res) {
-    var useritem = await userModelCtrl.userModel.find({
-      email: req.user._json.email,
-    });
+// Only enable Google auth if configured
+if (process.env.GOOGLE_CLIENT_ID) {
+  app.get(
+    "/auth/google",
+    passport.authenticate("google", { scope: ["profile", "email"] })
+  );
 
-    if (useritem.length <= 0) {
-      try {
-        var newUser = userModelCtrl.userModel({
+  app.get(
+    "/auth/google/callback/",
+    passport.authenticate("google", { failureRedirect: "/error" }),
+    async function (req, res) {
+      const userModelCtrl = require("./models/userModel");
+      const generateToken = require("./jwt").generateToken;
+
+      let useritem = await userModelCtrl.userModel.find({
+        email: req.user._json.email,
+      });
+
+      if (useritem.length <= 0) {
+        let newUser = userModelCtrl.userModel({
           name: req.user._json.name,
           email: req.user._json.email,
           img: req.user._json.picture,
           confirmed: true,
           password: (Math.random() + 1).toString(36).substring(7),
         });
-        newUser = await newUser.save();
-        var token = generateToken(req.user._json.email, "user" ).token;
-        res.redirect(`https://tradebattle.in/Client/auth.html#${token}`);
-      } catch (e) {
-        console.log(e);
-      }
-    } else {
-      var token = generateToken(req.user._json.email,  "user" ).token;
-     
-      res.redirect(`https://tradebattle.in/Client/auth.html#${token}`);
-    }
-  }
-);
 
-// TO GET STOCKS PRICE/AND UPDATE 
+        newUser = await newUser.save();
+
+        const token = generateToken(req.user._json.email, "user").token;
+
+        res.redirect(`https://tradebattle.in/Client/auth.html#${token}`);
+      } else {
+        const token = generateToken(req.user._json.email, "user").token;
+
+        res.redirect(`https://tradebattle.in/Client/auth.html#${token}`);
+      }
+    }
+  );
+} else {
+  console.log("Google OAuth routes disabled");
+}
+
+// -------------------
+// Background Jobs
+// -------------------
 updateStocks();
 
-app.use("/admin",adminRoutes)
+// -------------------
+// API Routes
+// -------------------
+app.use("/admin", adminRoutes);
 app.use("/login", signinRoutes);
 app.use("/register", signupRoutes);
 app.use("/contest", contestRoutes);
@@ -103,7 +133,18 @@ app.use("/user", userRoutes);
 app.use("/order", orderRoutes);
 app.use("/upload", uploadRoutes);
 
+// -------------------
+// Health Check (Useful for DevOps)
+// -------------------
+app.get("/", (req, res) => {
+  res.send("Trading Game Backend Running");
+});
 
-app.listen(process.env.PORT, () => {
-  console.log("Listening on port " + process.env.PORT);
+// -------------------
+// Server Start
+// -------------------
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}`);
 });
