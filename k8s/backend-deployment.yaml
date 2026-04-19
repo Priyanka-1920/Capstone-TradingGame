@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trading-backend
+  labels:
+    app: trading-backend
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: trading-backend
+
+  template:
+    metadata:
+      labels:
+        app: trading-backend
+
+    spec:
+      containers:
+        - name: backend
+          image: 975050024946.dkr.ecr.eu-west-2.amazonaws.com/trading-server:latest
+          ports:
+            - containerPort: 5000
+
+          env:
+            - name: AWS_BUCKET_NAME
+              value: "tradinggame-capstone"
+            - name: MONGO_URI
+              value: "your-mongo-connection-string"
+            - name: GOOGLE_CLIENT_ID
+              value: "dummy"
+            - name: GOOGLE_CLIENT_SECRET
+              value: "dummy"
+
+          # ✅ Liveness Probe
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+          # ✅ Readiness Probe
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

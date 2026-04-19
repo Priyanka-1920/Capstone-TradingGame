@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trading-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: trading-frontend
+  template:
+    metadata:
+      labels:
+        app: trading-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: 975050024946.dkr.ecr.eu-west-2.amazonaws.com/trading-client:latest
+        ports:
+        - containerPort: 80
