@@ -1,0 +1,50 @@
+- name: Configure EC2 Instance
+  hosts: servers
+  become: true
+
+  tasks:
+
+    - name: Update apt packages
+      apt:
+        update_cache: yes
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add ubuntu user to docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - curl
+          - unzip
+        state: present
+
+    - name: Install kubectl
+      shell: |
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+      args:
+        creates: /usr/local/bin/kubectl
+
+    - name: Verify installations
+      shell: |
+        docker --version
+        kubectl version --client
+      register: output
+
+    - name: Show output
+      debug:
+        var: output.stdout_lines
