@@ -10,6 +10,6 @@ alertmanager:
       - name: slack-notifications
         slack_configs:
           - api_url: 
-            channel: "#all-tradinggameslackalerts"
+            channel: "all-tradinggameslackalerts"
             title: " {{ .CommonAnnotations.summary }}"
             text: "{{ .CommonAnnotations.description }}"
