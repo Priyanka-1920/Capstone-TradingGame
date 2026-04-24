@@ -1,0 +1,33 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: sprint5-alerts
+  namespace: monitoring
+spec:
+  groups:
+  - name: sprint5.rules
+    rules:
+
+    - alert: HighCPUUsage
+      expr: sum(rate(container_cpu_usage_seconds_total[5m])) > 0.8
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High CPU usage"
+
+    - alert: PodCrashLooping
+      expr: kube_pod_container_status_restarts_total > 5
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Pod crash looping"
+
+    - alert: HighClusterCost
+      expr: kubecost_cluster_cost > 1000
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Cluster cost too high"

@@ -4,6 +4,8 @@ resource "helm_release" "monitoring" {
   chart      = "kube-prometheus-stack"
   namespace  = "monitoring"
   create_namespace = true
+
+  values = [file("${path.module}/values.yaml")]
 }
 resource "helm_release" "kubecost" {
   name       = "kubecost"
