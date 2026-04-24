@@ -9,7 +9,7 @@ alertmanager:
     receivers:
       - name: slack-notifications
         slack_configs:
-          - api_url: 
-            channel: "all-tradinggameslackalerts"
+          - api_url: https://hooks.slack.com/services/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
+            channel: "#all-tradinggameslackalerts"
             title: " {{ .CommonAnnotations.summary }}"
             text: "{{ .CommonAnnotations.description }}"
