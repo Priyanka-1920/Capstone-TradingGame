@@ -1,3 +1,19 @@
+const client = require('prom-client');
+
+// collect default metrics (CPU, memory, etc.)
+client.collectDefaultMetrics();
+
+// custom metrics
+const httpRequestCounter = new client.Counter({
+  name: 'http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status'],
+});
+
+const tradeCounter = new client.Counter({
+  name: 'trades_executed_total',
+  help: 'Total trades executed',
+});
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
@@ -26,6 +42,12 @@ const session = require("express-session");
 const dotenv = require("dotenv");
 dotenv.config();
 const app = express();
+const httpRequestDuration = new client.Histogram({
+  name: 'http_request_duration_seconds',
+  help: 'Duration of HTTP requests',
+  labelNames: ['method', 'route', 'status'],
+});
+
 // Securing HTTP Headers
 app.use(helmet());
 app.use(cors());
@@ -45,8 +67,28 @@ app.use(
   })
 );
 
+
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use((req, res, next) => {
+  const end = httpRequestDuration.startTimer();
+
+  res.on('finish', () => {
+    const labels = {
+      method: req.method,
+      route: req.originalUrl || req.path,
+      status: String(res.statusCode),  // 🔥 FIX
+    };
+
+    httpRequestCounter.inc(labels);
+
+    end(labels);
+  });
+
+  next();
+});
+
 
 app.get("/error", (req, res) => res.send("error logging in"));
 app.get("/logout", (req, res) => {
@@ -89,6 +131,11 @@ app.get(
   }
 );
 
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', client.register.contentType);
+  res.end(await client.register.metrics());
+});
+
 // TO GET STOCKS PRICE/AND UPDATE 
 updateStocks();
 
@@ -107,3 +154,7 @@ app.use("/upload", uploadRoutes);
 app.listen(process.env.PORT, () => {
   console.log("Listening on port " + process.env.PORT);
 });
+
+module.exports = {
+  tradeCounter
+};

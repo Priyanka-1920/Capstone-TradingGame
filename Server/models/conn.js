@@ -1,14 +1,18 @@
+require('dotenv').config();
 const mongoose = require("mongoose");
-const dotenv = require("dotenv");
 
-dotenv.config();
+const mongoURI = process.env.MONGO_URI;
 
-const url = process.env.MONGODB_CONNECTION_STRING;
+if (!mongoURI) {
+  console.error("❌ MONGO_URI is undefined");
+  process.exit(1);
+}
 
-mongoose.connect(url,()=>{
-    console.log("connected to DB")
-});
-mongoose.Promise = global.Promise;
-const db = mongoose.connection;
-db.on("error", console.error.bind(console, "connection error:"));
-module.exports = { db, mongoose };
+mongoose.connect(mongoURI)
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch(err => {
+    console.error("❌ MongoDB connection error:", err.message);
+    process.exit(1);
+  });
+
+module.exports = { mongoose };

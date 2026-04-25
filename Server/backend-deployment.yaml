@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trading-backend
+  labels:
+    app: trading-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: trading-backend
+  template:
+    metadata:
+      labels:
+        app: trading-backend
+    spec:
+      containers:
+        - name: backend
+          image: 975050024946.dkr.ecr.eu-west-2.amazonaws.com/trading-server:v5
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 3000
+
+          env:
+            - name: PORT
+              value: "3000"
+
+            - name: MONGO_URI
+              value: "mongodb+srv://TradingGame:TradingGame@tradinggame.s37m4wi.mongodb.net/trading?retryWrites=true&w=majority"
+
+            - name: AWS_BUCKET_NAME
+              value: "tradinggame-capstone"
+
+            - name: GOOGLE_CLIENT_ID
+              value: "dummy"
+
+            - name: GOOGLE_CLIENT_SECRET
+              value: "dummy"
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
