@@ -2,9 +2,9 @@ groups:
 - name: trading-app-alerts
   rules:
 
-  # Alert 1: No traffic (application down)
+  # Alert 1: No traffic
   - alert: NoTraffic
-    expr: sum(rate(http_requests_total[5m])) == 0
+    expr: sum(rate(http_requests_total[5m])) < 0.1
     for: 2m
     labels:
       severity: critical
@@ -12,7 +12,7 @@ groups:
       summary: "No traffic detected on trading app"
       description: "Application may be down or not receiving requests"
 
-  # Alert 2: High request rate (traffic spike)
+  # Alert 2: High request rate
   - alert: HighRequestRate
     expr: sum(rate(http_requests_total[1m])) > 10
     for: 1m
@@ -24,7 +24,7 @@ groups:
 
   # Alert 3: High memory usage
   - alert: HighMemoryUsage
-    expr: process_resident_memory_bytes > 200000000
+    expr: process_resident_memory_bytes > 100000000
     for: 1m
     labels:
       severity: warning
@@ -34,10 +34,11 @@ groups:
 
   # Alert 4: Instance down
   - alert: InstanceDown
-    expr: up == 0
+    expr: up{job="trading-backend"} == 0
     for: 1m
     labels:
       severity: critical
     annotations:
       summary: "Instance is down"
       description: "Prometheus target is not reachable"
+      
