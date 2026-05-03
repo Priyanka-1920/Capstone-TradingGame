@@ -1,5 +1,7 @@
 # Project Title: Kubernetes Cluster Health Checker and Auto-Healing
 
+## [View Full Documentation with screenshots for each sprint here](https://github.com/Priyanka-1920/Capstone-TradingGame/blob/main/CapstoneProject4Document.docx)
+
 
 ## Problem Statement
 In many organizations, managing Kubernetes clusters manually requires constant monitoring, troubleshooting, and intervention to maintain high availability. This is especially challenging for small DevOps teams managing large-scale clusters, as frequent manual tasks can consume time and lead to downtime. An automated health checker and self-healing tool can help monitor the state of Kubernetes clusters, detect and fix common issues (e.g., failed pods or unresponsive nodes), and ensure high availability with minimal manual intervention.
