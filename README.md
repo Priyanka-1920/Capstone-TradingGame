@@ -1,6 +1,6 @@
 # Project Title: Kubernetes Cluster Health Checker and Auto-Healing
 
-## [View Full Documentation with screenshots for each sprint here](https://github.com/Priyanka-1920/Capstone-TradingGame/blob/main/CapstoneProject4Document.docx)
+## [View Full Documentation with screenshots for each sprint here](https://github.com/Priyanka-1920/Capstone-TradingGame/blob/main/TradingGameDevopsWorkflow.docx)
 
 
 ## Problem Statement
